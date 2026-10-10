@@ -1,0 +1,44 @@
+# 合并就开饭：复制到你项目的 .github/workflows/merge-meal.yml
+# 需要的 Secrets：MCD_MCP_TOKEN、MCACTION_CONFIG_JSON（mcaction.json 的完整内容）
+# 只试算并在 PR 下评论，不会下单，也不会扣款。
+name: merge-meal
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  meal:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 试算奖励餐
+        env:
+          MCD_MCP_TOKEN: ${{ secrets.MCD_MCP_TOKEN }}
+          MCACTION_CONFIG_JSON: ${{ secrets.MCACTION_CONFIG_JSON }}
+          TZ: Asia/Shanghai
+        run: |
+          npx -y --package=github:xjkzhxjxwiwujs/mcaction mcd --dry --json --scene "${{ vars.MCACTION_SCENE || 'work' }}" "老样子" > plan.json
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const plan = JSON.parse(require('fs').readFileSync('plan.json', 'utf8'));
+            const body = [
+              `PR 已合并，@${context.payload.pull_request.user.login} 的奖励餐试算好了：`,
+              '```',
+              plan.summary,
+              '```',
+              '本地运行 `mcd 老样子` 回车确认即可下单。',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });

@@ -1,0 +1,17 @@
+#!/bin/sh
+# 合并进主分支后，试算一份奖励餐。只试算，不下单。
+# 安装：cp entries/git/post-merge .git/hooks/ && chmod +x .git/hooks/post-merge
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+case "$branch" in
+  main|master) ;;
+  *) exit 0 ;;
+esac
+
+command -v mcd >/dev/null 2>&1 || exit 0
+
+order="${MCACTION_TEXT:-老样子}"
+echo ""
+echo "合并完成，奖励一顿："
+mcd --dry "$order" || exit 0
+echo "满意就运行：mcd $order"

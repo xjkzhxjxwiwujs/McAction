@@ -1,0 +1,49 @@
+{
+  "budget": 35,
+  "autoBindCoupons": true,
+  "tryCoupons": 5,
+  "confirmWindowSec": 60,
+  "planTtlSec": 300,
+  "scenes": {
+    "home": {
+      "label": "在家",
+      "mode": "delivery",
+      "addressKeyword": "",
+      "items": ["巨无霸"]
+    },
+    "work": {
+      "label": "工位",
+      "mode": "pickup",
+      "city": "上海市",
+      "keyword": "人民广场",
+      "items": ["麦辣鸡腿堡"]
+    },
+    "car": {
+      "label": "车里",
+      "mode": "dt",
+      "city": "上海市",
+      "keyword": "虹桥",
+      "items": ["双层吉士汉堡", "可乐"]
+    },
+    "breakfast": {
+      "label": "早餐",
+      "mode": "pickup",
+      "city": "上海市",
+      "keyword": "人民广场",
+      "items": ["猪柳蛋麦满分"],
+      "inMinutes": 25
+    },
+    "night": {
+      "label": "夜宵",
+      "mode": "delivery",
+      "items": ["麦辣鸡翅", "薯条"],
+      "budget": 30
+    }
+  },
+  "auto": [
+    { "from": "05:00", "to": "10:30", "scene": "breakfast" },
+    { "from": "10:30", "to": "14:00", "scene": "work" },
+    { "from": "21:00", "to": "05:00", "scene": "night" },
+    { "scene": "home" }
+  ]
+}
