@@ -1,0 +1,47 @@
+{
+  "name": "mcaction-vscode",
+  "displayName": "麦一下：夜宵状态栏",
+  "description": "晚上还在写代码时，状态栏显示附近门店的券后价，点一下下单",
+  "version": "0.1.0",
+  "publisher": "mcaction",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcaction.order",
+        "title": "麦一下：现在点"
+      }
+    ],
+    "configuration": {
+      "title": "麦一下",
+      "properties": {
+        "mcaction.server": {
+          "type": "string",
+          "default": "http://127.0.0.1:3790",
+          "description": "麦一下服务地址"
+        },
+        "mcaction.key": {
+          "type": "string",
+          "default": "",
+          "description": "MCACTION_KEY（服务未开鉴权时留空）"
+        },
+        "mcaction.scene": {
+          "type": "string",
+          "default": "night",
+          "description": "使用的场景"
+        },
+        "mcaction.fromHour": {
+          "type": "number",
+          "default": 21,
+          "description": "几点之后开始显示（到次日 5 点）"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "mcaction",
+  "version": "0.1.0",
+  "description": "麦一下 McAction：任何按钮都能变成麦当劳键（基于麦当劳官方 MCP）",
+  "type": "module",
+  "bin": {
+    "mcd": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "mcd": "node src/cli.js",
+    "ping": "node src/cli.js ping",
+    "test": "node --test test/logic.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcdonalds",
+    "mcp",
+    "action-button",
+    "shortcuts",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "qrcode": "^1.5.4"
+  }
+}
