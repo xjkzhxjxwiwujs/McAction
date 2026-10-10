@@ -1,42 +1,70 @@
-# 麦当劳一键点餐
+# 麦一下 McAction
 
-基于 [麦当劳 MCP 平台](https://open.mcd.cn/mcp/doc) 的本地 Web 应用：选湖州/洛阳地址 → 门店 → 菜单 → 算价 → 下单。
+## 项目介绍
 
-## 准备
-1. 在 [open.mcd.cn/mcp](https://open.mcd.cn/mcp) 登录并激活 MCP Token  
-2. 复制 `.env.example` 为 `.env`，填入 Token：
+任何按钮都能变成麦当劳键。操作按钮、背面轻点、NFC 贴纸、汉堡回车键、终端、合并代码、编辑器状态栏，背后是同一套逻辑：按当前场景选门店、匹配在售餐、用本店能用的券试算，确认后才创建订单，并给出付款码。付款始终由你自己完成。
 
-```env
-MCD_MCP_TOKEN=你的Token
-MCD_MCP_URL=https://mcp.mcd.cn
-PORT=3780
-```
+本项目基于麦当劳官方 MCP，由参赛者独立开发，不是麦当劳官方产品。价格、库存和券以官方实时结果为准。
 
-## 启动
+## 目标用户
+
+已经有固定吃法的人：早餐、工位自取、回家外送、得来速。也给想把点餐接到键盘、终端、CI 或编辑器上的开发者。
+
+## 安装方法
+
+需要 Node.js 20 或以上，以及在 [open.mcd.cn](https://open.mcd.cn) 申请的 MCP Token。
 
 ```bash
-cd mcd-order
+cp .env.example .env          # 填入 MCD_MCP_TOKEN
+cp config/mcaction.example.json mcaction.json   # 改成自己的城市、地址关键词和常点的餐
 npm install
-npm start
+npm start                     # http://127.0.0.1:3790
+node src/cli.js ping          # 确认 MCP 通了
 ```
 
-浏览器打开：http://localhost:3780
+手机、NFC、Stream Deck 要从别的设备访问时，在 `.env` 里设置 `MCACTION_KEY`，服务会改为监听 `0.0.0.0`。外网访问时把穿透地址写进 `MCACTION_PUBLIC_URL`。
 
-## 功能
+## 使用示例
 
-- **湖州 / 洛阳一键开点**：按关键词自动匹配菜单并试算（默认勾选「先试算不落单」）
-- 地址 / 门店 / 菜单浏览与购物车下单
-- 一键领券、算价、创建订单（支付需在麦当劳 App / 支付链接完成）
+终端（`npm link` 之后可直接用 `mcd`）：
 
-## API 摘要
+```bash
+node src/cli.js 老样子                 # 按当前时间选场景，试算后回车才下单
+node src/cli.js 30元以内 牛肉           # 预算 + 想吃的
+node src/cli.js -s work --at 12:40 麦辣鸡腿堡
+node src/cli.js --dry 老样子            # 只试算，不下单
+node src/cli.js order <订单号>          # 付款后查状态
+```
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/health` | MCP 连通性 |
-| GET | `/api/addresses` | 配送地址（湖州/洛阳优先） |
-| GET | `/api/delivery-stores` | 外送门店 |
-| POST | `/api/meals` | 菜单 |
-| POST | `/api/calculate-price` | 算价 |
-| POST | `/api/create-order` | 下单 |
-| POST | `/api/one-click-order` | 一键试算/下单 |
+超出预算时不会下单，除非加上 `-y`。
 
+其余入口都打到本机服务，说明写在对应目录：
+
+| 入口 | 触发 | 说明 |
+| --- | --- | --- |
+| 汉堡回车键 | 按一下试算，60 秒内再按一下下单并打开付款页 | [entries/burger-enter-key](entries/burger-enter-key/README.md) |
+| 合并代码就开饭 | 合并进主分支后只试算，不扣款 | [entries/git/post-merge](entries/git/post-merge)、[entries/github-action/merge-meal.yml](entries/github-action/merge-meal.yml) |
+| 编辑器夜宵栏 | 21 点后且最近在保存文件时，状态栏显示券后价 | [entries/vscode-extension](entries/vscode-extension) |
+| 操作按钮 / 背面轻点 / NFC / 关闹钟 / 日历空档 | 快捷指令调用同一接口 | [entries/ios-shortcuts](entries/ios-shortcuts/README.md) |
+
+场景在 `mcaction.json` 里配置。`auto` 按时间切换：05:00–10:30 早餐，10:30–14:00 工位，21:00–05:00 夜宵，其余时间在家。
+
+## 接口
+
+| 方法 | 路径 | 作用 |
+| --- | --- | --- |
+| POST | `/v1/press` | 第一次试算，同一按钮在 `confirmWindowSec` 内再调一次才下单 |
+| POST | `/v1/plan` | 只试算，返回 `planId` |
+| POST | `/v1/confirm/:planId` | 确认下单，返回付款页 |
+| GET | `/v1/peek` | 只读预览，不领券，给状态栏轮询 |
+| GET | `/pay/:token` | 付款二维码和付款链接，30 分钟有效 |
+
+查询参数 `format=json`（默认）、`text`（脚本通知）、`html`（Stream Deck 直接打开）。
+
+## 开发
+
+```bash
+npm test
+```
+
+不连 MCP，只覆盖意图解析、按时间选场景和预约时间。
