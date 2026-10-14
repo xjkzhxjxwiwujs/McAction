@@ -22,7 +22,7 @@ npm start                     # http://127.0.0.1:3790
 node src/cli.js ping          # 确认 MCP 通了
 ```
 
-手机、NFC、Stream Deck 要从别的设备访问时，在 `.env` 里设置 `MCACTION_KEY`，服务会改为监听 `0.0.0.0`。外网访问时把穿透地址写进 `MCACTION_PUBLIC_URL`。
+手机、NFC、Steam Deck 要从别的设备访问时，在 `.env` 里设置 `MCACTION_KEY`，服务会改为监听 `0.0.0.0`。外网访问时把穿透地址写进 `MCACTION_PUBLIC_URL`。
 
 ## 使用示例
 
